@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+package-lock.json
+
+# os
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editors
+.vscode/
+.idea/
+*.swp
+
+# build / scratch
+dist/
+build/
+*.log
+.env
+.env.*
+
+# tests
+test-results/
+playwright-report/
+server/kyoo.db

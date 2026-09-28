@@ -1,0 +1,22 @@
+{
+  "name": "kyoo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Live clinic queue tracking for Hyderabad",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "server": "node server/index.js",
+    "test": "node test/core.test.mjs && node test/server.test.mjs && node test/ui.test.mjs && node test/integration.test.mjs",
+    "test:core": "node test/core.test.mjs",
+    "test:server": "node test/server.test.mjs",
+    "test:ui": "node test/ui.test.mjs",
+    "test:integration": "node test/integration.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

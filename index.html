@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kyoo — live clinic queues in Hyderabad</title>
+<meta name="description" content="See the token your doctor is serving right now across Hyderabad hospitals, and the time you should leave your house. Book, reschedule or cancel with a full refund up to an hour before.">
+<meta name="theme-color" content="#0C2A2E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Kyoo — live clinic queues in Hyderabad">
+<meta property="og:description" content="Not just the wait. The time to walk out of your door.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230C2A2E'/%3E%3Ctext x='16' y='23' font-family='Archivo,Segoe UI,sans-serif' font-size='19' font-weight='800' fill='%23F4B942' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,75..125,300..800;1,75..125,300..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/styles/base.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="brand"><b>Ky<i>oo</i></b><span>Live clinic queues, Hyderabad</span></div>
+
+  <nav class="navlinks" id="navlinks"></nav>
+
+  <div class="picker">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    <div><label>You are in</label><select id="areaSel" aria-label="Your area"></select></div>
+  </div>
+
+  <div class="searchbox">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Doctor, hospital or problem — try “fever”, “knee pain”" aria-label="Search">
+  </div>
+
+  <div class="barspace"></div>
+
+  <div class="clockpill">
+    <div><label>Demo clock</label><b class="num" id="clockTxt">—</b></div>
+    <input type="range" id="clockSlide" min="360" max="1320" step="5" aria-label="Demo clock">
+  </div>
+
+  <button class="btn-ghost mytok" id="bell" aria-label="Alerts">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+    <span class="dot" id="bellDot" hidden>0</span>
+  </button>
+  <button class="btn-ghost mytok" id="tokBtn">My tokens<span class="dot" id="tokDot" hidden>0</span></button>
+  <span id="whoBox"></span>
+</header>
+
+<!-- ═══ patient search (shown on #/search) ═══ -->
+<div id="searchView">
+  <section class="board">
+    <div class="board-in">
+      <div class="board-head">
+        <div>
+          <h1>Right now in <em id="areaName">Uppal</em></h1>
+          <p>Every number below is the token a doctor is actually seeing at this minute. Pick one and we'll tell you the time to walk out of your door.</p>
+        </div>
+        <div class="livechip"><span class="pulse"></span><span id="liveTxt">Updating live</span></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="sOpen" class="num">0</b><span>Doctors consulting now</span></div>
+        <div class="stat"><b id="sQueue" class="num">0</b><span>Patients waiting within <span id="sRad">8</span> km</span></div>
+        <div class="stat"><b class="num"><span id="sWait">0</span><small>min</small></b><span>Typical wait right now</span></div>
+        <div class="stat"><b class="num"><span id="sFast">0</span><small>min</small></b><span>Shortest wait near you</span></div>
+        <div class="stat"><b id="sLeft" class="num">0</b><span>Tokens still open today</span></div>
+      </div>
+
+      <div class="strip">
+        <div class="strip-t">Now serving, closest clinics first</div>
+        <div class="tiles" id="tiles"></div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="specs"><div class="specs-in" id="chips"></div></nav>
+
+  <div class="wrap" id="mainView">
+    <aside class="filters" id="filters">
+      <div class="fgroup">
+        <h3>Hospital <span class="val" id="hospCount">—</span></h3>
+        <input class="hfind" id="hospFind" type="search" placeholder="Find a hospital">
+        <div class="hospsel" id="hospBox"></div>
+        <button class="reset" id="hospClear" style="display:none;margin-top:7px">Clear hospital filter</button>
+      </div>
+      <div class="fgroup">
+        <h3>Distance <span class="val num" id="vDist">8 km</span></h3>
+        <input type="range" id="fDist" min="2" max="30" value="8">
+      </div>
+      <div class="fgroup">
+        <h3>Longest wait you'll accept <span class="val num" id="vWait">90 min</span></h3>
+        <input type="range" id="fWait" min="10" max="180" step="5" value="90">
+      </div>
+      <div class="fgroup">
+        <h3>Consultation fee <span class="val num" id="vFee">₹2000</span></h3>
+        <input type="range" id="fFee" min="100" max="2000" step="50" value="2000">
+      </div>
+      <div class="fgroup">
+        <h3>Availability</h3>
+        <label class="frow"><input type="checkbox" id="fOpen" checked> Consulting right now</label>
+        <label class="frow"><input type="checkbox" id="fToken"> Takes tokens online</label>
+        <label class="frow"><input type="checkbox" id="fPunc"> Usually starts on time</label>
+        <label class="frow"><input type="checkbox" id="fFree"> Has tokens left</label>
+      </div>
+      <div class="fgroup">
+        <h3>Speaks</h3>
+        <div id="langBox"></div>
+      </div>
+      <div class="fgroup">
+        <h3>Doctor</h3>
+        <label class="frow"><input type="radio" name="g" value="any" checked> Any</label>
+        <label class="frow"><input type="radio" name="g" value="F"> Female</label>
+        <label class="frow"><input type="radio" name="g" value="M"> Male</label>
+      </div>
+      <button class="reset" id="resetBtn">Clear all filters</button>
+    </aside>
+
+    <div>
+      <div class="rhead">
+        <p><b id="cnt">0</b> <span id="cntTail">doctors</span></p>
+        <div class="sortwrap">
+          <button class="fbtn" id="fbtn">Filters</button>
+          <label for="sort">Sort</label>
+          <select id="sort">
+            <option value="seen">Seen soonest, including the ride</option>
+            <option value="wait">Shortest queue</option>
+            <option value="near">Nearest to me</option>
+            <option value="leave">Latest I can leave home</option>
+            <option value="fee">Lowest fee</option>
+            <option value="rate">Best rated</option>
+            <option value="punc">Most punctual</option>
+          </select>
+        </div>
+      </div>
+      <div class="rows" id="rows"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ every other route renders here ═══ -->
+<main id="page" style="display:none"></main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <div>
+      <h4>Patients</h4>
+      <a href="#/search">Find a doctor near you</a><a href="#/hospitals">Hospitals in Hyderabad</a>
+      <a href="#/tokens">My tokens</a><a href="#/account">Account and data</a>
+    </div>
+    <div>
+      <h4>Clinics and doctors</h4>
+      <a href="#/desk">Front desk console</a><a href="#/admin">Hospital dashboard</a>
+      <a href="#/doctor">Doctor view</a><a href="#/login">Sign in</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="#/owner">Platform analytics</a><a href="#/account">Privacy and your data</a>
+    </div>
+    <div class="note">
+      <b style="color:#fff">Browse Hyderabad</b>
+      <div class="seo" id="seo"></div>
+      <p style="margin:14px 0 0">Prototype. Doctors, hospitals, fees and queues here are generated sample data, not real practices. Travel times are estimated from straight-line distance and time of day, not live traffic. No real payment is taken and no real money is refunded.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"></aside>
+<div class="tracker" id="tracker"></div>
+<div class="notewrap" id="notewrap"></div>
+<div class="modal" id="modal"></div>
+<div class="toast" id="toast"></div>
+
+<div class="consent" id="consent">
+  <h3>Can we record how you use this site?</h3>
+  <p>We'd log which screens you open and how long you spend on them, to see where people get stuck. Your name and phone number are never attached to it, and you can see, download or delete everything from your account at any time. Saying no changes nothing about how the site works.</p>
+  <div class="rowflex">
+    <button class="b b-dark" id="consentYes" style="background:var(--amber);color:#20170A">Yes, that's fine</button>
+    <button class="b b-line" id="consentNo">No thanks</button>
+  </div>
+</div>
+
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
